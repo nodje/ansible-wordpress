@@ -1,0 +1,26 @@
+---
+# Include each playbook in order to check syntax of each playbook
+- name: Include build.yml
+  import_playbook: ../build.yml
+
+- name: Include run.yml
+  import_playbook: run.yml
+
+- name: Include development-setup.yml
+  import_playbook: development-setup.yml
+
+# Explicity include each role to ensure all roles are tested
+- hosts: localhost
+  remote_user: root
+  roles:
+    - ansible-swapfile
+    - common
+    - fqdn
+    - letsencrypt
+    - logwatch
+    - mysql
+    - mywordpress
+    - nginx
+    - php
+    - Stouts.postfix
+    - wpcli

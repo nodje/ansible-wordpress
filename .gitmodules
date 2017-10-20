@@ -1,0 +1,12 @@
+[submodule "roles/fqdn"]
+	path = roles/fqdn
+	url = git@github.com:nodje/ansible-fqdn.git
+[submodule "roles/ansible-swapfile"]
+	path = roles/ansible-swapfile
+	url = git@github.com:kamaln7/ansible-swapfile.git
+[submodule "roles/logwatch"]
+	path = roles/logwatch
+url=git@github.com:nodje/logwatch.git
+[submodule "roles/Stouts.postfix"]
+	path = roles/Stouts.postfix
+url=git@github.com:nodje/Stouts.postfix.git

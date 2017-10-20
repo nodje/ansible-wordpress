@@ -1,0 +1,21 @@
+---
+- name: Check if wp command is installed
+  command: wp
+  register: wp_check
+  ignore_errors: True
+
+- name: install wpcli
+  become: yes
+  get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: /usr/local/bin/wp
+    mode: 0755
+  when: wp_check.rc == 2
+
+- name: update wp if already installed
+  expect:
+    command: wp cli update
+    responses:
+      (?i)[y/n]: y
+    timeout: 3
+  ignore_errors: True

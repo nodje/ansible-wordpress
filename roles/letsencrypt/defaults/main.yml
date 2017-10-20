@@ -1,0 +1,11 @@
+---
+letsencrypt_cert_domains:
+  - "{{ ansible_fqdn }}"
+letsencrypt_webroot_path: /var/www/letsencrypt
+letsencrypt_email: "{{ admin_email }}"
+letsencrypt_command: "/usr/bin/certbot certonly -n --agree-tos --email {{ letsencrypt_email }} --webroot --webroot-path {{ letsencrypt_webroot_path }} {% for dom in letsencrypt_cert_domains %}-d {{ dom }} {% endfor %}"
+letsencrypt_renewal_frequency:
+  day: "*"
+  hour: 3
+  minute: 15
+letsencrypt_renewal_command_args: "--renew-hook \"/usr/sbin/service nginx reload\""

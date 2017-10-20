@@ -1,0 +1,22 @@
+---
+
+dependencies: []
+
+galaxy_info:
+  author: klen
+  company: Stouts
+  description: Manage postfix
+  license: MIT
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: RedHat
+      versions:
+        - all
+    - name: CentOS
+      versions:
+        - all
+  categories:
+    - system
+    - networking

@@ -1,0 +1,88 @@
+---
+- name: Add specified repository into sources list.
+  apt_repository:
+    repo: 'ppa:certbot/certbot'
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: update cache
+  apt: update_cache=yes
+
+- name: Install letsencrypt dependencies
+  package:
+    name: certbot
+    state: latest
+  when: ansible_distribution == 'Debian'
+
+- name: Install letsencrypt dependencies
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - software-properties-common
+    - python-certbot-nginx
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install letencrypt configuration
+  template:
+    src: letsencrypt.conf
+    dest: /etc/nginx/snippets/letsencrypt.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: install ssl configuration
+  template:
+    src: ssl.conf
+    dest: /etc/nginx/snippets/ssl.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create the folder for the challenges
+  file:
+    path: /var/www/letsencrypt/.well-known/acme-challenge
+    state: directory
+
+- name: insert/update include letsencrypt.conf configuration block in /etc/nginx/sites-available/
+  blockinfile:
+    path: "/etc/nginx/sites-available/{{ fqdn }}.conf"
+    block: |
+          include /etc/nginx/snippets/letsencrypt.conf;
+    insertafter: "server_name" # the block will be inserted after the last match of specified pattern (regexp)
+
+- name: restart nginx
+  service: name=nginx state=restarted
+
+- name: Attempt to get the certificate
+  command: "{{ letsencrypt_command }}"
+
+- name: generate dhparam
+  command: "openssl dhparam -out /etc/letsencrypt/live/{{ fqdn }}/dhparam.pem 2048"
+  args:
+    creates: /etc/letsencrypt/live/{{ fqdn }}/dhparam.pem
+
+- name: activate ssl config with block in file
+  blockinfile:
+    path: "/etc/nginx/sites-available/{{ fqdn }}.conf"
+    block: |
+      {{ lookup('template', './nginx-ssh-block.j2') }}
+    marker: "# {mark} ANSIBLE MANAGED SSL BLOCK"
+    state: present
+
+- name: activate nginx configuration
+  file:
+    src: /etc/nginx/sites-available/{{ fqdn }}.conf
+    dest: /etc/nginx/sites-enabled/{{ fqdn }}.conf
+    state: link
+
+- name: restart nginx
+  service: name=nginx state=restarted
+
+- name: Install renewal cron
+  cron:
+    name: "Let's Encrypt Renewal"
+    day: "{{ letsencrypt_renewal_frequency.day }}"
+    hour: "{{ letsencrypt_renewal_frequency.hour }}"
+    minute: "{{ letsencrypt_renewal_frequency.minute }}"
+    job: "/usr/bin/certbot renew --quiet --webroot-path {{ letsencrypt_webroot_path }} {{ letsencrypt_renewal_command_args }}"

@@ -1,0 +1,53 @@
+## http://{{ domain }} redirects to https://{{ domain }}
+server {
+	listen 80;
+	listen [::]:80;
+	server_name {{ domain }};
+
+	include /etc/nginx/snippets/letsencrypt.conf;
+
+	location / {
+		return 301 https://{{ domain }}$request_uri;
+	}
+}
+
+## http://{{ fqdn }} redirects to https://{{ fqdn }}
+server {
+	listen 80 default_server;
+    listen [::]:80 default_server ipv6only=on;
+	server_name {{ fqdn }};
+
+	include /etc/nginx/snippets/letsencrypt.conf;
+
+	location / {
+		return 301 https://{{ fqdn }}$request_uri;
+	}
+}
+
+## https://{{ domain }} redirects to https://{{ fqdn }}
+server {
+	listen 443 ssl http2;
+	listen [::]:443 ssl http2;
+	server_name {{ domain }};
+
+	ssl_certificate         /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem;
+	ssl_certificate_key     /etc/letsencrypt/live/{{ fqdn }}/privkey.pem;
+	ssl_trusted_certificate /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem;
+	ssl_dhparam             /etc/letsencrypt/live/{{ fqdn }}/dhparam.pem;
+	include /etc/nginx/snippets/ssl.conf;
+
+	location / {
+		return 301 https://{{ fqdn }}$request_uri;
+	}
+}
+
+## Serves https://{{ fqdn }}
+server {
+    listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server ipv6only=on;
+
+    ssl_certificate         /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem;
+    ssl_certificate_key     /etc/letsencrypt/live/{{ fqdn }}/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem;
+    ssl_dhparam             /etc/letsencrypt/live/{{ fqdn }}/dhparam.pem;
+    include /etc/nginx/snippets/ssl.conf;

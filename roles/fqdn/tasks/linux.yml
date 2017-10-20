@@ -1,0 +1,22 @@
+---
+- name: Set Hostname with hostname command
+  hostname:
+    name: "{{ hostname }}"
+  notify:
+    - restart hostname
+    - restart systemd-logind
+
+- name: Re-gather facts
+  action: setup
+  when: ansible_hostname != fqdn
+
+- name: Build hosts file (backups will be made)
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      {{ public_ip }} {{ fqdn }} {{ hostname }}
+    insertafter: EOF
+  when: ansible_default_ipv4.address is defined or public_ip is defined
+  notify:
+    - restart hostname
+    - restart systemd-logind

@@ -1,0 +1,4 @@
+---
+container_ci: yes
+
+server_name: project-wordpress

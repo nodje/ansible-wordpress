@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+mkdir -p /var/www/{{ fqdn }}/db_backup
+chmod 0770 /var/www/{{ fqdn }}/db_backup
+umask 007
+mysqldump -u{{ wp_db_user }} -p"{{ wp_db_password }}" {{ wp_db_name }} --skip-dump-date > /var/www/{{ fqdn }}/db_backup/{{ wp_db_name }}.sql
+git --git-dir /var/www/{{ fqdn }}/.git --work-tree /var/www/{{ fqdn }} ls-files -m -o --exclude-standard
+git --git-dir /var/www/{{ fqdn }}/.git --work-tree /var/www/{{ fqdn }} add --all
+git --git-dir /var/www/{{ fqdn }}/.git --work-tree /var/www/{{ fqdn }} commit -m 'Nightly backup'
+git --git-dir /var/www/{{ fqdn }}/.git --work-tree /var/www/{{ fqdn }} push -u origin master

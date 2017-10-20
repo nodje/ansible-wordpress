@@ -1,0 +1,41 @@
+---
+- name: setup the git backup
+  template:
+    src: roles/mywordpress/templates/git-backup.sh.j2
+    dest: /root/git-backup.sh
+    mode: 0755
+
+- name: Install git backup cron
+  cron:
+    name: "git nightly backup"
+    day: "*"
+    hour: "02"
+    minute: "00"
+    job: /root/git-backup.sh
+
+- name: Wordpress | Make sure site database is available
+  import_tasks: mysql.yml
+
+# remote & local exist: failed=false
+# remote exist & no local: clone
+# remote doesn't exist: failed=true
+- name: check git remote existence & clone only if no local repo exist
+  git:
+    repo: "{{ remote_git }}"
+    dest: "{{ wp_install_dir }}"
+    accept_hostkey: yes
+    clone: yes
+    update: no
+    #umask:
+  register: git_check
+  ignore_errors: True
+
+- name: Restore Wordpress from cloned repo.
+  include_tasks: restore.yml
+  when: git_check.changed == true # repo was checked out
+
+- name: Create an empty Wordpress and a database if no remote repo exist
+  include_tasks: new-wordpress.yml
+#  debug:
+#    msg: "We create new wordpress because git_check.rc={{ git_check.rc }}"
+  when: git_check.failed == true and git_check.rc == 128 # cloning repository does not exist

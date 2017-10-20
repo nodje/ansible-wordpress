@@ -1,0 +1,71 @@
+---
+- name: Empty vhost directory, we don't keep any pre-existing conditions #Remove default nginx vhost config file (if configured).
+  file:
+    path: "{{ nginx_vhost_path }}/"
+    state: absent
+  when: nginx_remove_default_vhost
+
+- name: Empty vhost avail directory as well
+  file:
+    path: "{{ nginx_vhost_path_avail }}/"
+    state: absent
+  when: nginx_remove_default_vhost
+
+- name: Ensure nginx_vhost_path exists.
+  file:
+    path: "{{ nginx_vhost_path }}"
+    state: directory
+
+- name: Ensure nginx_vhost_path exists.
+  file:
+    path: "{{ nginx_vhost_path_avail }}"
+    state: directory
+
+#- name: Add default vhost file
+#  template:
+#    src: "{{ nginx_default_template }}"
+#    dest: "{{ nginx_vhost_path_avail }}/default"
+#    force: yes
+#    owner: root
+#    group: root
+#    mode: 0644
+#  when: nginx_remove_default_vhost
+#
+#- name: Link the default vhost file
+#  file:
+#    src: "{{ nginx_vhost_path_avail }}/default"
+#    dest: "{{ nginx_vhost_path }}/default"
+#    state: link
+
+- name: Add managed vhost config files.
+  template:
+    src: "{{ item.template|default(nginx_vhost_template) }}"
+    dest: "{{ nginx_vhost_path_avail }}/{{ item.server_name.split(' ')[0] }}.conf"
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: item.state|default('present') != 'absent'
+  with_items: "{{ nginx_vhosts }}"
+
+- name: Link the managed host to {{ nginx_vhost_path }}
+  file:
+    src: "{{ nginx_vhost_path_avail }}/{{ item.server_name.split(' ')[0] }}.conf"
+    dest: "{{ nginx_vhost_path }}/{{ item.server_name.split(' ')[0] }}.conf"
+    state: link
+  with_items: "{{ nginx_vhosts }}"
+  notify: reload nginx
+
+#- name: Remove managed vhost config files.
+#  file:
+#    path: "{{ nginx_vhost_path }}/{{ item.server_name.split(' ')[0] }}.conf"
+#    state: absent
+#  when: item.state|default('present') == 'absent'
+#  with_items: "{{ nginx_vhosts }}"
+#  notify: reload nginx
+
+- name: Remove legacy vhosts.conf file.
+  file:
+    path: "{{ nginx_vhost_path }}/vhosts.conf"
+    state: absent
+  notify: reload nginx

@@ -1,0 +1,72 @@
+---
+- name: Setup the server for a full wordpress instance
+  hosts: domain-host
+  gather_facts: yes
+  become: yes
+  vars:
+    http_port: 80
+    max_clients: 200
+  tasks:
+    - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
+    - include_role:
+        name: ansible-swapfile
+      vars:
+        swapfile_size: "{{ project_swapfile_size }}"
+      when: ansible_swaptotal_mb < 1    # conditional on roles still execute each "- name:" steps in the role, but skip them if the conditional is false
+    - include_role:
+        name: common
+    - include_role:
+        name: fqdn
+      vars:
+        fqdn: "{{ domain }}"
+        hostname: "{{ local_hostname }}"
+        public_ip: "{{ ipv4_address }}"
+    - include_role:
+        name: logwatch
+      vars:
+        logwatch_email: "root@localhost"  # Email Address which Logwatch reports to
+        logwatch_detail: "low"            # The level of detail in the Logwatch report
+        logwatch_range: "yesterday"       # The default time range for the Logwatch report
+        logwatch_output: "stdout"         # The output method of the Logwatch report
+        logwatch_format: "text"           # The format of the Logwatch report
+        logwatch_cron_time: "daily"       # Cron special time specification nickname - must match with logwatch range!
+    - include_role:
+        name: mysql
+      vars:
+        mysql_root_password: "{{ project_mysql_root_password }}"
+    - include_role:
+        name: nginx
+    - include_role:
+        name: Stouts.postfix
+      vars:
+        postfix_myhostname: "{{ fqdn }}"
+        postfix_local_user_relay_address: "{{ admin_email }}"
+        postfix_smtp_sasl_security_options: "noanonymous"
+        postfix_relayhost: "{{ email_relayhost }}"
+        postfix_smtp_sasl_user: "{{ email_smtp_sasl_user }}"
+        postfix_smtp_sasl_password: "{{ email_smtp_sasl_password }}"
+    - include_role:
+        name: letsencrypt
+      vars:
+        letsencrypt_email: "{{ admin_email }}"
+        letsencrypt_cert_domains:
+          - "{{ domain }}"
+          - "{{ fqdn }}"
+          - "dev.{{ domain }}"
+        letsencrypt_renewal_command_args: '--renew-hook "systemctl restart nginx"'
+    - include_role:
+        name: php
+    - include_role:
+        name: wpcli
+    - include_role:
+        name: mywordpress
+      vars:
+        wp_remote_repo:
+        wp_version: latest
+        wp_install_dir: "/var/www/{{ fqdn }}"
+        wp_db_name: "{{ project_name }}"
+        wp_db_user: "{{ project_name }}"
+        wp_db_root_pwd: "{{ project_mysql_root_password }}"
+        wp_db_host: "localhost"
+        wp_lang: "fr_FR"
+        wp_site_name: "{{ project_name }}"

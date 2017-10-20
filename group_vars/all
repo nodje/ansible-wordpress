@@ -1,0 +1,28 @@
+---
+# file: group_vars/all
+default_user: user
+local_hostname: www
+project_name: myproject
+domain: myproject.com
+fqdn: '{{ local_hostname }}.{{ domain }}'
+ipv4_address: '{{ ansible_default_ipv4.address }}'
+admin_email: admin@myproject.org
+#
+project_swapfile_size: 600MB
+#
+email_relayhost: "smtp.elasticemail.com:2525"
+email_smtp_sasl_user: "elasticemailuser@gmail.com"
+email_smtp_sasl_password: "elasticemail password"
+
+wp_install_dir: '/var/www/{{ fqdn }}'
+wp_db_password: "my db password"
+
+# mysql
+project_mysql_root_password: ''
+
+# remote git account
+# @TODO encrypt
+remote_git: '{{ git_provider_accountname }}@bitbucket.org:{{ git_provider_accountname }}/{{ fqdn }}.git'
+git_provider_accountname: 'account' # Bitbucket needs it for API usage
+git_provider_user: 'account@gmail.com'
+git_provider_passwd: 'password'

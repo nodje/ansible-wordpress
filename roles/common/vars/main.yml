@@ -1,0 +1,38 @@
+---
+common_packages:
+  # Ensure that Apparmor is installed
+  #- apparmor
+  # Enables support for the HTTPS protocol in APT sources
+  - apt-transport-https
+  # Used to perform a system upgrade
+  - aptitude
+  # Used to compile
+  - build-essential
+  - curl
+  - htop
+  - vim-nox
+  # Enables automation of programs and scripts that ask for user input
+  - expect
+  # Used to verify GPG signatures for mirrored packages
+  - gnupg
+  # Used to configure firewall rules
+  - iptables
+  # Used for documentation generation
+  - markdown
+  # Ensures the server's clock is set properly
+  - ntp
+  # Required to use the Ansible `expect` module
+  - python-pexpect
+  # Used to generate convenient QR codes for mobile clients in the
+  # Shadowsocks and Tor roles
+  - qrencode
+  # Used for automatically installing security updates
+  - unattended-upgrades
+  # Word List dictionary used by several roles to generate random
+  # (yet typeable!) passphrases
+  - wamerican-huge
+  # to mail activated on the server
+  - mailutils
+  # to find out more on users action
+  - acct
+  - git

@@ -1,0 +1,21 @@
+---
+wp_version: latest
+# TODO: https://wordpress.org/download/release-archive/
+# wp_sha256sum: 8543e31d7c0a1b15f73dbb20f9161845f3d2bb8de3d7aef371cf32bba41747ee
+# these are set as example but commented out since deemed essential
+# wp_install_dir: '/var/sites/awesome_wordpress_site'
+wp_db_root: 'root'
+wp_db_root_pwd: ''
+# wp_db_name: 'database_name_here'
+# wp_db_user: 'username_here'
+# wp_db_password: 'password_here'
+wp_db_host: 'localhost'
+wp_db_charset: 'utf8'
+wp_db_collate: ''
+wp_table_prefix: 'wp_'
+wp_debug: false
+
+wp_fs_method: 'direct'
+wp_lang: ''
+
+wp_site_name: "{{ wp_apache_hostname | default('example') }}"

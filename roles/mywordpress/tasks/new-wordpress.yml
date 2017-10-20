@@ -1,0 +1,48 @@
+---
+- name: Wordpress | Ensure that installation directory exists
+  file: path={{wp_install_dir|dirname}} state=directory
+
+- name: Wordpress | Download {{wp_version}} to /tmp
+  get_url: url=http://wordpress.org/wordpress-{{wp_version}}.tar.gz force=no dest=/tmp/wordpress-{{wp_version}}.tar.gz
+  # TODO sha256sum="{{ wp_sha256sum }}"
+
+- name: Wordpress | Extract archive
+  unarchive: src=/tmp/wordpress-{{wp_version}}.tar.gz dest=/tmp copy=no
+
+- name: Wordpress | Move extracted directory to {{wp_install_dir}}
+  command: /bin/mv /tmp/wordpress {{wp_install_dir}} creates={{wp_install_dir}}
+
+- name: Wordpress | Remove wordpress-{{wp_version}}.tar.gz
+  file: path=/tmp/wordpress-{{wp_version}}.tar.gz state=absent
+
+- name: Wordpress | Fetch random salts for wp-config.php
+  command: curl https://api.wordpress.org/secret-key/1.1/salt/
+  register: 'wp_salt'
+
+- name: Wordpress | Copy wp-config.php file
+  template: src=wp-config.php.j2 dest={{wp_install_dir}}/wp-config.php
+
+- name: Wordpress | Change ownership of installation directory
+  file: path={{wp_install_dir}} owner=www-data group=www-data mode=775 state=directory recurse=yes
+
+- name: Wordpress | Change ownership of wp-content directory
+  file: path={{wp_install_dir}}/wp-content/ owner=www-data group=www-data mode=755 state=directory recurse=yes
+
+# @TODO replace with uri module, cf. mainmain.yml
+- name: create remote repo
+  command: >
+    curl -X POST -H "Content-Type: application/json" -d '{"scm": "git", "is_private":"true"}'
+      https://api.bitbucket.org/2.0/repositories/{{ git_provider_accountname }}/{{ fqdn }}
+      -u{{ git_provider_user }}:{{ git_provider_passwd }}
+
+- name: init repo from locale host
+  shell: |
+    git init
+    git config core.filemode false
+    git config user.name "{{ git_provider_accountname }}"
+    git config user.email {{ git_provider_user }}
+    git add --all
+    git commit -am "Initial commit"
+    git remote add origin {{ remote_git }}
+  args:
+    chdir: "{{ wp_install_dir }}"
