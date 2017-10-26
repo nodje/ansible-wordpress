@@ -13,7 +13,7 @@
     - debug: var=fqdn_ns
     - debug: var=fqdn_a
     - include_role:
-        name: ansible-swapfile
+        name: swapfile
       when: ansible_swaptotal_mb < swapfile_size # @TODO: this means we cannot reduce the swapfile size
     - include_role:
         name: common
@@ -39,7 +39,7 @@
     - include_role:
         name: nginx
     - include_role:
-        name: Stouts.postfix
+        name: postfix
       vars:
         postfix_myhostname: "{{ fqdn }}"
         postfix_local_user_relay_address: "{{ admin_email }}"
