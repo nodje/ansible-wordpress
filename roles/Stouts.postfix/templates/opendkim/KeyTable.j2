@@ -1,3 +1,0 @@
-{%for item in postfix_dkim_domains -%}
-mail._domainkey.{{item}} {{item}}:mail:/etc/opendkim/keys/{{item}}/mail.private
-{%endfor %}

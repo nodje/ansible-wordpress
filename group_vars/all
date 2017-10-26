@@ -16,6 +16,9 @@ email_smtp_sasl_password: "elasticemail password"
 
 wp_install_dir: '/var/www/{{ fqdn }}'
 wp_db_password: "my db password"
+# defining the var 'wp_old_domain' triggers a wp search-replace in the existing wordpress db
+wp_old_domain: ''
+wp_lang: "en_US"
 
 # mysql
 project_mysql_root_password: ''

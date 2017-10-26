@@ -6,21 +6,23 @@
   vars:
     http_port: 80
     max_clients: 200
+    fqdn_ns: "{{ lookup('dig', '{{ domain }}', 'qtype=NS') }}"
+    fqdn_a: "{{ lookup('dig', '{{ fqdn }}', '@{{ fqdn_ns }}') }}"
   tasks:
     - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
+    - debug: var=fqdn_ns
+    - debug: var=fqdn_a
     - include_role:
         name: ansible-swapfile
-      vars:
-        swapfile_size: "{{ project_swapfile_size }}"
-      when: ansible_swaptotal_mb < 1    # conditional on roles still execute each "- name:" steps in the role, but skip them if the conditional is false
+      when: ansible_swaptotal_mb < swapfile_size # @TODO: this means we cannot reduce the swapfile size
     - include_role:
         name: common
     - include_role:
         name: fqdn
       vars:
         fqdn: "{{ domain }}"
-        hostname: "{{ local_hostname }}"
-        public_ip: "{{ ipv4_address }}"
+        hostname: "{{ project_name }}"
+        public_ip: "{{ groups['domain-host'][0] }}"
     - include_role:
         name: logwatch
       vars:
@@ -47,12 +49,11 @@
         postfix_smtp_sasl_password: "{{ email_smtp_sasl_password }}"
     - include_role:
         name: letsencrypt
+      when: groups['domain-host'][0] == fqdn_a # this test requires that the inventory group 'domain-host' be populated dynamically by a cloud script or manually as IP
       vars:
         letsencrypt_email: "{{ admin_email }}"
         letsencrypt_cert_domains:
-          - "{{ domain }}"
           - "{{ fqdn }}"
-          - "dev.{{ domain }}"
         letsencrypt_renewal_command_args: '--renew-hook "systemctl restart nginx"'
     - include_role:
         name: php
@@ -68,5 +69,4 @@
         wp_db_user: "{{ project_name }}"
         wp_db_root_pwd: "{{ project_mysql_root_password }}"
         wp_db_host: "localhost"
-        wp_lang: "fr_FR"
         wp_site_name: "{{ project_name }}"

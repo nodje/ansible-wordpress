@@ -17,7 +17,7 @@
     method: POST
     user: "{{ git_provider_user }}"
     password: "{{ git_provider_passwd }}"
-    body: "label=root@{{ domain }}&key={{ pubkey.stdout|urlencode}}"
+    body: "label=root@{{ fqdn }}&key={{ pubkey.stdout|urlencode}}"
     force_basic_auth: yes
   register: result
   failed_when: result.status != 200 and "Someone has already registered that SSH key" not in result.content

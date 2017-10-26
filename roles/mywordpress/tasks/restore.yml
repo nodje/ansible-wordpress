@@ -41,7 +41,7 @@
 - name: wp cli search-replace old domain with {{ fqdn }}
   become: yes
   become_user: www-data
-  command: wp search-replace {{ old-domain }} {{ fqdn }}
+  command: wp search-replace {{ old_domain }} {{ fqdn }}
   args:
     chdir: "{{ wp_install_dir }}"
   when: old_domain is defined

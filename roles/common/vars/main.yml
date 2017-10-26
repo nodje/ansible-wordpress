@@ -36,3 +36,4 @@ common_packages:
   # to find out more on users action
   - acct
   - git
+  - netcat
