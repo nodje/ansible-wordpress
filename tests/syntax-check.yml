@@ -13,7 +13,7 @@
 - hosts: localhost
   remote_user: root
   roles:
-    - ansible-swapfile
+    - swapfile
     - common
     - fqdn
     - letsencrypt
@@ -22,5 +22,5 @@
     - mywordpress
     - nginx
     - php
-    - Stouts.postfix
+    - postfix
     - wpcli

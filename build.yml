@@ -47,6 +47,10 @@
         postfix_relayhost: "{{ email_relayhost }}"
         postfix_smtp_sasl_user: "{{ email_smtp_sasl_user }}"
         postfix_smtp_sasl_password: "{{ email_smtp_sasl_password }}"
+    - copy:
+        content: |
+          {{ admin_email }}
+        dest: /root/.forward
     - include_role:
         name: letsencrypt
       when: groups['domain-host'][0] == fqdn_a # this test requires that the inventory group 'domain-host' be populated dynamically by a cloud script or manually as IP
