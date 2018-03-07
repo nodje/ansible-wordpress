@@ -7,11 +7,21 @@
 
 - name: update cache
   apt: update_cache=yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: add distribution-specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
+
+- name: add backports repository for Debian
+  apt_repository: repo='deb {{backports_uri}} {{backports_components}}' state=present update_cache=yes
+  when: ansible_distribution == 'Debian'
 
 - name: Install letsencrypt dependencies
   package:
-    name: certbot
+    name: python-certbot-nginx
     state: latest
+    default_release: squeeze-backports
+    update_cache: yes
   when: ansible_distribution == 'Debian'
 
 - name: Install letsencrypt dependencies
@@ -22,6 +32,18 @@
     - software-properties-common
     - python-certbot-nginx
   when: ansible_distribution == 'Ubuntu'
+
+- name: create letsencrypt renewal post hook
+  file:
+    path: /etc/letsencrypt/renewal-hooks/post
+    state: directory
+  become: yes
+
+- name: install letencrypt post restart hook
+  template:
+    src: restartnginx.sh
+    mode: +x
+  become: yes
 
 - name: install letencrypt configuration
   template:

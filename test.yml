@@ -1,0 +1,15 @@
+---
+- name: test var
+  hosts: domain-host
+  gather_facts: yes
+  become: yes
+  vars:
+    http_port: 80
+    max_clients: 200
+    fqdn_ns: "{{ lookup('dig', '{{ domain }}', 'qtype=NS') }}"
+    fqdn_a: "{{ lookup('dig', '{{ fqdn }}', '@{{ fqdn_ns }}') }}"
+  tasks:
+    - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
+    - debug: var=domain
+    - debug: var=fqdn_ns
+    - debug: var=fqdn_a
