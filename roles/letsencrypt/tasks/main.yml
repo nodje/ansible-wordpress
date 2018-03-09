@@ -13,16 +13,25 @@
   include_vars: "{{ ansible_distribution }}.yml"
 
 - name: add backports repository for Debian
-  apt_repository: repo='deb {{backports_uri}} {{backports_components}}' state=present update_cache=yes
+  apt_repository: repo='deb {{ backports_uri }} {{ backports_components }}' state=present update_cache=yes
   when: ansible_distribution == 'Debian'
 
-- name: Install letsencrypt dependencies
+- name: remove any prexisting certbot
   package:
+    name: certbot
+    state: absent
+
+- name: Install letsencrypt dependencies
+  apt:
     name: python-certbot-nginx
     state: latest
-    default_release: squeeze-backports
+    default_release: "{{ backports_distribution }}-backports"
     update_cache: yes
   when: ansible_distribution == 'Debian'
+
+#- name: get certbot to generate certs
+#  shell: certbot --authenticator webroot --installer nginx
+#  when: ansible_distribution == 'Debian'
 
 - name: Install letsencrypt dependencies
   package:
@@ -39,13 +48,14 @@
     state: directory
   become: yes
 
-- name: install letencrypt post restart hook
+- name: install letsencrypt post restart hook
   template:
     src: restartnginx.sh
+    dest: /etc/letsencrypt/renewal-hooks/post
     mode: +x
   become: yes
 
-- name: install letencrypt configuration
+- name: install letsencrypt configuration
   template:
     src: letsencrypt.conf
     dest: /etc/nginx/snippets/letsencrypt.conf
@@ -63,7 +73,7 @@
 
 - name: Create the folder for the challenges
   file:
-    path: /var/www/letsencrypt/.well-known/acme-challenge
+    path: /var/www/letsencrypt/.well-known
     state: directory
 
 - name: insert/update include letsencrypt.conf configuration block in /etc/nginx/sites-available/
@@ -73,7 +83,7 @@
           include /etc/nginx/snippets/letsencrypt.conf;
     insertafter: "server_name" # the block will be inserted after the last match of specified pattern (regexp)
 
-- name: restart nginx
+- name: restart nginx so that the certbot can use the config for certificate generation
   service: name=nginx state=restarted
 
 - name: Attempt to get the certificate
