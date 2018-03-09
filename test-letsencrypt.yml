@@ -5,7 +5,7 @@
   become: yes
   vars:
     backports_uri: http://ftp.debian.org/debian
-    domain: tectoluce.com
+    domain: {{ inventory_hostname }}
   tasks:
     - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
   roles:
