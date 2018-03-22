@@ -1,8 +1,10 @@
 ---
 - name: Check if wp command is installed
-  command: wp
+  shell: wp --version
   register: wp_check
   ignore_errors: True
+  become: False
+  changed_when: False
 
 - name: install wpcli
   become: yes
@@ -18,4 +20,13 @@
     responses:
       (?i)[y/n]: y
     timeout: 3
+  register: result
+  changed_when: '"WP-CLI is at the latest version" not in result.stdout'
   ignore_errors: True
+
+- name: update the domain name if the var wp_old_domain exist
+  shell: sudo -uwww-data wp search-replace {{ wp_old_domain }} {{ domain }}
+  args:
+    chdir: "{{ wp_install_dir }}"
+  when: wp_old_domain is defined
+  become: False

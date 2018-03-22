@@ -59,7 +59,7 @@ nginx_vhosts:
     listenv6: "[::]:80"
     server_name: "{{ fqdn }}"
     server_name_redirect: "{{ domain }}"
-    root: "/var/www/{{ fqdn }}"
+    root: "{{ wp_install_dir }}"
     index: "index.php"
     # error_page: ""
     access_log: "/var/log/nginx/{{ fqdn }}-access.log main buffer=16k"

@@ -8,7 +8,11 @@
     max_clients: 200
     fqdn_ns: "{{ lookup('dig', '{{ domain }}', 'qtype=NS') }}"
     fqdn_a: "{{ lookup('dig', '{{ fqdn }}', '@{{ fqdn_ns }}') }}"
+    wp_install_dir: "{% if wp_old_domain is defined %}/var/www/{{ local_hostname }}.{{ wp_old_domain }}{% else %}/var/www/{{ fqdn }}{% endif %}"
+    remote_git: "{% if wp_old_domain is defined %}{{ git_provider_accountname }}@bitbucket.org:{{ git_provider_accountname }}/{{ local_hostname }}.{{ wp_old_domain }}.git{% else %}{{ git_provider_accountname }}@bitbucket.org:{{ git_provider_accountname }}/{{ fqdn }}.git{% endif %}"
   tasks:
+    - debug: var=wp_install_dir
+    - debug: var=remote_git
     - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
     - debug: var=fqdn_ns
     - debug: var=fqdn_a

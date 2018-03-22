@@ -9,6 +9,7 @@
   become: true
   command: cat /root/.ssh/id_ed25519.pub
   register: pubkey
+  check_mode: no
 
 # @TODO Hardcoded
 - name: upload the newly created public key to Bitbucket
