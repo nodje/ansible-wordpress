@@ -8,14 +8,17 @@
     max_clients: 200
     fqdn_ns: "{{ lookup('dig', '{{ domain }}', 'qtype=NS') }}"
     fqdn_a: "{{ lookup('dig', '{{ fqdn }}', '@{{ fqdn_ns }}') }}"
+    get_letsencrypt_certs: "{% if groups['domain-host'][0] == fqdn_a and ansible_ssh_extra_args is not defined %}True{% else %}False{% endif %}"
     wp_install_dir: "{% if wp_old_domain is defined %}/var/www/{{ local_hostname }}.{{ wp_old_domain }}{% else %}/var/www/{{ fqdn }}{% endif %}"
     remote_git: "{% if wp_old_domain is defined %}{{ git_provider_accountname }}@bitbucket.org:{{ git_provider_accountname }}/{{ local_hostname }}.{{ wp_old_domain }}.git{% else %}{{ git_provider_accountname }}@bitbucket.org:{{ git_provider_accountname }}/{{ fqdn }}.git{% endif %}"
   tasks:
-    - debug: var=wp_install_dir
-    - debug: var=remote_git
+    - debug: var=ansible_ssh_extra_args
+    - debug: msg="Wordpress installation dir will be {{ wp_install_dir }}"
+    - debug: var="Git remote folder will be {{ remote_git }}"
     - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
-    - debug: var=fqdn_ns
-    - debug: var=fqdn_a
+    - debug: msg="Domain {{ domain }} nameservers are {{ fqdn_ns }}"
+    - debug: msg="IP for the fqdn {{ fqdn }} is {{ fqdn_a }}"
+    - debug: msg="Will Letsencrypt certificate be activated? {{ get_letsencrypt_certs }}"
     - include_role:
         name: swapfile
       when: ansible_swaptotal_mb < swapfile_size # @TODO: this means we cannot reduce the swapfile size
@@ -57,7 +60,8 @@
         dest: /root/.forward
     - include_role:
         name: letsencrypt
-      when: groups['domain-host'][0] == fqdn_a # this test requires that the inventory group 'domain-host' be populated dynamically by a cloud script or manually as IP
+      when: get_letsencrypt_certs
+      #when: groups['domain-host'][0] == fqdn_a # this test requires that the inventory group 'domain-host' be populated dynamically by a cloud script or manually as IP
       vars:
         letsencrypt_email: "{{ admin_email }}"
         letsencrypt_cert_domains:
