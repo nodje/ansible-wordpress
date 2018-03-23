@@ -14,7 +14,7 @@
   tasks:
     - debug: var=ansible_ssh_extra_args
     - debug: msg="Wordpress installation dir will be {{ wp_install_dir }}"
-    - debug: var="Git remote folder will be {{ remote_git }}"
+    - debug: msg="Git remote folder will be {{ remote_git }}"
     - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
     - debug: msg="Domain {{ domain }} nameservers are {{ fqdn_ns }}"
     - debug: msg="IP for the fqdn {{ fqdn }} is {{ fqdn_a }}"
