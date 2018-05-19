@@ -1,6 +1,6 @@
 ---
 - name: Ensure MySQL packages are installed.
-  yum: "name={{ item }} state=installed enablerepo={{ mysql_enablerepo }}"
+  yum: "name={{ item }} state=present enablerepo={{ mysql_enablerepo }}"
   with_items: "{{ mysql_packages }}"
   register: rh_mysql_install_packages
 

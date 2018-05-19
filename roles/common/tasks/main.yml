@@ -17,6 +17,10 @@
   apt:
     upgrade: "safe"
 
+- name: change the default editor to vim.nox
+  shell: >
+    update-alternatives --set editor /usr/bin/vim.nox
+
 - name: Copy the unattended-upgrades templates to enable automatic security updates
   copy:
     src: "{{ item.src }}"
