@@ -1,10 +1,9 @@
 ---
 - name: Check if wp command is installed
-  shell: wp --version
+  stat:
+    path: /usr/local/bin/wp
   register: wp_check
-  ignore_errors: True
   become: False
-  changed_when: False
 
 - name: install wpcli
   become: yes
@@ -12,7 +11,7 @@
     url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     dest: /usr/local/bin/wp
     mode: 0755
-  when: wp_check.rc == 2
+  when: wp_check.stat.exists == False
 
 - name: update wp if already installed
   expect:
@@ -22,7 +21,7 @@
     timeout: 3
   register: result
   changed_when: '"WP-CLI is at the latest version" not in result.stdout'
-  ignore_errors: True
+  when: wp_check.stat.exists == True
 
 - name: update the domain name if the var wp_old_domain exist
   shell: sudo -uwww-data wp search-replace {{ wp_old_domain }} {{ domain }}
