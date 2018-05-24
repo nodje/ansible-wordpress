@@ -2,7 +2,7 @@
 - name: Setup the server for a full wordpress instance
   hosts: domain-host
   gather_facts: yes
-  become: yes
+  become: true
   vars:
     http_port: 80
     max_clients: 200
@@ -21,21 +21,17 @@
     - debug: msg="Will Letsencrypt certificate be activated? {{ get_letsencrypt_certs }}"
     - include_role:
         name: swapfile
-      become: yes
       when: ansible_swaptotal_mb < swapfile_size # @TODO: this means we cannot reduce the swapfile size
     - include_role:
         name: common
-      become: yes
     - include_role:
         name: fqdn
-      become: yes
       vars:
         fqdn: "{{ domain }}"
         hostname: "{{ project_name }}"
         public_ip: "{{ groups['domain-host'][0] }}"
     - include_role:
         name: logwatch
-      become: yes
       vars:
         logwatch_email: "root@localhost"  # Email Address which Logwatch reports to
         logwatch_detail: "low"            # The level of detail in the Logwatch report
@@ -45,15 +41,12 @@
         logwatch_cron_time: "daily"       # Cron special time specification nickname - must match with logwatch range!
     - include_role:
         name: mysql
-      become: yes
       vars:
         mysql_root_password: "{{ project_mysql_root_password }}"
     - include_role:
         name: nginx
-      become: yes
     - include_role:
         name: postfix
-      become: yes
       vars:
         postfix_myhostname: "{{ fqdn }}"
         postfix_local_user_relay_address: "{{ admin_email }}"
@@ -67,7 +60,6 @@
         dest: /root/.forward
     - include_role:
         name: letsencrypt
-      become: yes
       when: get_letsencrypt_certs
       #when: groups['domain-host'][0] == fqdn_a # this test requires that the inventory group 'domain-host' be populated dynamically by a cloud script or manually as IP
       vars:
@@ -77,13 +69,10 @@
         letsencrypt_renewal_command_args: '--renew-hook "systemctl restart nginx"'
     - include_role:
         name: php
-      become: yes
     - include_role:
         name: wpcli
-      become: yes
     - include_role:
         name: mywordpress
-      become: yes
       vars:
         wp_remote_repo:
         wp_version: latest
