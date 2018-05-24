@@ -2,12 +2,13 @@
 - name: test letsencrypt role
   hosts: domain-host
   gather_facts: yes
-  become: yes
+  remote_user: "{{ default_user }}"
+  become: true
   vars:
     backports_uri: http://ftp.debian.org/debian
     domain: "{{ inventory_hostname }}"
   tasks:
     - debug: msg="ansible_memtotal_mb={{ ansible_memtotal_mb }}, ansible_swaptotal_mb={{ ansible_swaptotal_mb }}"
-  roles:
-    #- letsencrypt
-    - wpcli
+    - include_role:
+        name: swapfile
+      become: true
