@@ -10,7 +10,7 @@ NB: The address IP must be used in domain-host and domain and project-name must 
 
 - change the way certbot is installed: use squeeze backport
 - add to vhost config:
-```aidl
+```
             location ~ ^/wp-admin {
                     allow 85.234.144.9;
                     allow 114.242.13.180;
@@ -18,4 +18,8 @@ NB: The address IP must be used in domain-host and domain and project-name must 
                     allow 81.57.82.186;
                     deny all;
             }
+```
+- change the main build.yml: it does not run under default_user
+```
+remote_user: "{{ default_user }}"
 ```
