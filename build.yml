@@ -27,7 +27,7 @@
     - include_role:
         name: fqdn
       vars:
-        fqdn: "{{ domain }}"
+        fqdn: "{{ local_hostname }}.{{ domain }}"
         hostname: "{{ project_name }}"
         public_ip: "{{ groups['domain-host'][0] }}"
     - include_role:
